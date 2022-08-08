@@ -4,19 +4,19 @@ const jwt = require('jsonwebtoken');
 const Chat = require('../model/Chat');
 
 const register = async (req,res)=>{
-  const { username,email,password } = req.body;
+  const { username,email,password,userimg } = req.body;
   if( !username )
     username = '';
 
   if( !email ) 
-    return res.status(409).json({msg : 'username required'});
+    return res.status(409).json({msg : 'email required'});
 
   if( !password )
-    return res.status(409).json({msg : 'email required'});
+    return res.status(409).json({msg : 'password required'});
 
   try{
     const hashedpwd = await bcrypt.hash(password,10);
-    const user = await User.create({username,email,password:hashedpwd});
+    const user = await User.create({username,email,password:hashedpwd,userimg});
     return res.status(201).json(user);
   }
   catch(err){
@@ -32,7 +32,7 @@ const login = async (req,res)=>{
   if( !password )
     return res.status(409).json({ msg : 'password required' });
 
-  let user = await User.findOne({ email }).exec();
+  let user = await User.findOne({ email }).select('email password').exec();
   if( !user )
     return res.status(409).json({ msg : 'email not registered' });
   
@@ -65,13 +65,7 @@ const login = async (req,res)=>{
         maxAge : 1000*60*60*24*30,
       }
     ).json({
-      _id : user._id,
-      email,
-      username:user.username,
       accessToken,
-      joinedChats: user.joinedChats,
-      waitingChats : user.waitingChats,
-      blockedChats : user.blockedChats,
     });
 
   }
@@ -107,8 +101,7 @@ const updateDetails = async ( req,res )=>{
     userimg : user.userimg,
     email : user.email
   });
-}
-  
+} 
 
 const updatePassword = async (req,res)=>{
   const email = req.headers.email;

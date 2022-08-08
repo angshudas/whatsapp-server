@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const http = require('http').Server(app);
-const User = require('./model/User');
+const bodyParser = require('body-parser');
 const io = require('socket.io')(http,{
   cors : {
     origin : ['http://127.0.0.1:3000']
@@ -19,8 +19,9 @@ mongoose.connect('mongodb://localhost:27017/whatsapp',function(){
 
 
 app.use(cookieParser());
+app.use(express.json({ limit : '16mb' }));
 app.use(express.urlencoded({extended:false}));
-app.use(express.json());
+app.use(bodyParser.json({ limit : '16mb' }))
 app.use(cors({ origin : 'http://127.0.0.1:3000',credentials : true }));
 io.on('connection',require('./socketServer'));
 

@@ -35,7 +35,8 @@ const refresh = async(req,res)=>{
          _id : user._id,
          accessToken,
          email : user.email,
-         username : user.username
+         username : user.username,
+         userimg : user.userimg,
       });
     }
   )

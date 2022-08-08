@@ -9,11 +9,9 @@ const allChats = async( req,res )=>{
     return res.status(403).json({ msg : 'email not found' });
 
   const user = await User.findOne({ email })
-  .populate({ path : 'joinedChats', select : 'members', populate : { path : 'members', select : 'username -_id' } })
-  .populate({ path : 'waitingChats', select : 'members', populate : { path : 'members', select : 'username -_id' } })
-  .populate({ path : 'blockedChats', select : 'members', populate : { path : 'members', select : 'username -_id' } }).select('joinedChats waitingChats blockedChats');
-
-  // console.log(user);
+  .populate({ path : 'joinedChats', select : 'members', populate : { path : 'members',match :{ email : { $ne : email } }, select : 'username userimg -_id' } })
+  .populate({ path : 'waitingChats', select : 'members', populate : { path : 'members',match :{ email : { $ne : email } }, select : 'username userimg -_id' } })
+  .populate({ path : 'blockedChats', select : 'members', populate : { path : 'members',match :{ email : { $ne : email } }, select : 'username userimg -_id' } }).select('joinedChats waitingChats blockedChats');
 
   res.status(200).json({ user });
 
