@@ -3,13 +3,11 @@ const jwt = require('jsonwebtoken');
 
 const refresh = async(req,res)=>{
   const refreshToken = req.cookies['whatsappjwt'];
-  // return res.status(200);
-  // console.log(refreshToken,'hello');
+
   if( !refreshToken )
     return res.status(403).json({ msg : 'whatsapp refresh token not found' });
 
   const user = await User.findOne({ refreshToken }).exec();
-  // console.log(user);
   if( !user )
     return res.status(403).json({ msg : 'refresh token invalid' });
 
@@ -17,8 +15,6 @@ const refresh = async(req,res)=>{
     refreshToken,
     process.env.REFRESH_TOKEN_SECRET,
     (err,decoded)=>{
-      // console.log(decoded,user.email,'decoded');
-      // console.log(err,'err');
       if( err )
         return res.status(403).json({ msg : 'refresh token invalid' });
       

@@ -36,16 +36,6 @@ const userSchema = new mongoose.Schema({
     default : [],
     ref : 'Chat',
   },
-  waitingChats : {
-    type : [mongoose.Types.ObjectId],
-    default : [],
-    ref : 'Chat',
-  },
-  blockedChats : {
-    type : [mongoose.Types.ObjectId],
-    default : [],
-    ref : 'Chat',
-  },
   userimg : {
     type : 'String',
     default : '',

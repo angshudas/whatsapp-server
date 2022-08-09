@@ -9,9 +9,7 @@ const allChats = async( req,res )=>{
     return res.status(403).json({ msg : 'email not found' });
 
   const user = await User.findOne({ email })
-  .populate({ path : 'joinedChats', select : 'members', populate : { path : 'members',match :{ email : { $ne : email } }, select : 'username userimg -_id' } })
-  .populate({ path : 'waitingChats', select : 'members', populate : { path : 'members',match :{ email : { $ne : email } }, select : 'username userimg -_id' } })
-  .populate({ path : 'blockedChats', select : 'members', populate : { path : 'members',match :{ email : { $ne : email } }, select : 'username userimg -_id' } }).select('joinedChats waitingChats blockedChats');
+  .populate({ path : 'joinedChats', select : 'members', populate : { path : 'members',match :{ email : { $ne : email } }, select : 'username userimg -_id' } });
 
   res.status(200).json({ user });
 
@@ -24,11 +22,8 @@ const addNewChat = async(req,res)=>{
   if( !email || !friend )
     return res.status(403).json({ msg : 'sender and friend email required' });
   
-  const senderUser = 
-        await User.findOne({ email : email }).select('joinedChats waitingChats blockedChats username')
-            .populate({ path : 'joinedChats', select : 'members -_id' })
-            .populate({ path : 'waitingChats', select : 'members -_id' })
-            .populate({ path : 'blockedChats', select : 'members -_id' });
+  const senderUser = await User.findOne({ email }).select('joinedChats username');
+
   if( !senderUser )
     return res.status(403).json({ msg : 'sender user email not valid' });
   const friendUser = await User.findOne({ email : friend }).exec();
@@ -37,19 +32,16 @@ const addNewChat = async(req,res)=>{
 
   // console.log(senderUser);
   let duplicate = false;
-  [...senderUser.joinedChats,...senderUser.waitingChats,...senderUser.blockedChats].forEach(chat=>{
-    console.log(chat.members[0]," ", chat.members[1]);
+
+  senderUser.joinedChats.forEach(chat=>{
     if( JSON.stringify(chat.members[0])===JSON.stringify(friendUser._id) )
-      // return res.status(200).json({ msg : 'friend already exists' });
       duplicate = true;
     if( JSON.stringify(chat.members[1])===JSON.stringify(friendUser._id) )
-      // return res.status(200).json({ msg : 'friend already exists' });
       duplicate = true;
-
   });
+
   if( duplicate )
     return res.status(400).json({ msg : 'friend already exists' });
-  // console.log(friendUser._id,duplicate,'friend');
 
   const chat = await Chat.create({
     members : [senderUser._id,friendUser._id]
@@ -57,7 +49,7 @@ const addNewChat = async(req,res)=>{
 
   senderUser.joinedChats.push(chat._id);
   await senderUser.save();
-  friendUser.waitingChats.push(chat._id);
+  friendUser.joinedChats.push(chat._id);
   await friendUser.save();
 
   return res.status(200).json({
@@ -84,26 +76,5 @@ const joinChat = async( req,res )=>{
 module.exports = {
   allChats,
   addNewChat,
-  // sendMessage,
   joinChat
 }
-  // const sendMessage = async(req,res)=>{
-  //   const { email,chat_id,message } = req.body;
-  //   if( !email || !chat_id || !message )
-  //     return res.status(400).json({ msg : 'sender email, chat id and message required' });
-  
-  //   const chats = await User.findOne({ email }).select('joinedChats blockedChats waitingChats');
-  
-  //   let myId = null;
-  //   [...chats.joinedChats,...chats.blockedChats,...chats.waitingChats].forEach(chat=>{
-  //     if(chat.equals(chat_id))
-  //       myId = chat;
-  //   });
-  
-  //   if( myId )
-  //     return res.status(400).json({ msg : 'not valid chat id' });
-  
-    
-  //   return res.status(200).json({ msg : 'done' });
-  
-  // }
