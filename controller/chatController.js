@@ -4,12 +4,20 @@ const Chat = require('../model/Chat');
 
 const allChats = async( req,res )=>{
   const email = req.headers['email'];
-  // console.log(email,'allchat');
+
   if( !email )
     return res.status(403).json({ msg : 'email not found' });
 
-  const user = await User.findOne({ email })
-  .populate({ path : 'joinedChats', select : 'members', populate : { path : 'members',match :{ email : { $ne : email } }, select : 'username userimg -_id' } });
+  const user = await User.findOne({ email }).select('joinedChats groupChats')
+  .populate({
+    path : 'joinedChats',
+    select : 'members',
+    populate : { 
+      path : 'members',
+      match :{ email : { $ne : email } },
+      select : 'username userimg -_id' 
+    } 
+  });
 
   res.status(200).json({ user });
 
